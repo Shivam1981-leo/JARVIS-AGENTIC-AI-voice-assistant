@@ -1,0 +1,20 @@
+D:\Anaconda\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.9)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+
+Loading local Whisper AI model... (GPU Acceleration enabled)
+Checking CUDA availability: False
+Initializing Whisper on cpu...
+Whisper model loaded successfully on CPU!
+J.A.R.V.I.S: Good Evening, sir. It's Monday, May 04, 2026. Weather outside is Sunny +31°C. All systems online. Say 'Wake up Jarvis' to activate me.
+
+Calibrating background noise once... Please wait.
+Calibration complete. Jarvis multitasking engine is ready.
+
+
+Listening...
+Recognizing locally with Whisper...
+
+Listening...
+Recognizing locally with Whisper...
