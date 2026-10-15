@@ -1,0 +1,40 @@
+{
+    "Project Leo": {
+        "path": "",
+        "description": "",
+        "status": "completed",
+        "started_at": "2026-07-08 21:01:46.920935",
+        "updates": [
+            {
+                "timestamp": "2026-07-12 08:53:13.653015",
+                "update": "in_progress"
+            },
+            {
+                "timestamp": "2026-08-05 10:14:21.099355",
+                "update": "in_progress"
+            }
+        ],
+        "completed_at": "2026-10-01 18:13:09.202801"
+    },
+    "New Project": {
+        "path": "",
+        "description": "",
+        "status": "active",
+        "started_at": "2026-07-13 09:55:26.790945",
+        "updates": []
+    },
+    "": {
+        "path": "",
+        "description": "",
+        "status": "active",
+        "started_at": "2026-07-23 19:12:17.845175",
+        "updates": []
+    },
+    "Open Source Contributions": {
+        "path": "D:\\open source contributions",
+        "description": "Tracking open source contributions and projects",
+        "status": "active",
+        "started_at": "2026-10-01 18:13:09.187618",
+        "updates": []
+    }
+}

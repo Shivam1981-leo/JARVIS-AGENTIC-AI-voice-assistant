@@ -17,7 +17,15 @@ import sys
 import importlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from AppOpener import open as open_app, close as close_app
-import ollama
+from typing import Annotated, TypedDict, Literal
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.tools import StructuredTool
+import base64
 import edge_tts
 from dotenv import load_dotenv
 import requests
@@ -36,6 +44,7 @@ jarvis_state = "asleep"  # asleep, idle, listening, thinking, speaking
 running = True
 is_asleep = True
 MEMORY_FILE = "memory.json"
+PROJECTS_FILE = "projects.json"
 
 # --- Multitasking State ---
 last_interaction_time = time.time()
@@ -151,63 +160,140 @@ def close_application(app_name: str) -> str:
     except Exception as e:
         return f"Error: Failed to close {app_name}."
 
+def get_chroma_collection():
+    import chromadb
+    client = chromadb.PersistentClient(path="./chroma_memory")
+    return client.get_or_create_collection(name="jarvis_memory")
+
 def remember_information(fact: str) -> str:
-    """Saves a piece of information or fact to Jarvis's long-term memory."""
-    memories = []
-    if os.path.exists(MEMORY_FILE):
-        with open(MEMORY_FILE, 'r') as f:
-            memories = json.load(f)
-    memories.append({"date": str(datetime.date.today()), "fact": fact})
-    with open(MEMORY_FILE, 'w') as f:
-        json.dump(memories, f, indent=4)
-    return f"Successfully remembered: {fact}"
+    """Saves a piece of information or fact to Jarvis's long-term vector memory."""
+    import uuid
+    import datetime
+    collection = get_chroma_collection()
+    doc_id = str(uuid.uuid4())
+    collection.add(
+        documents=[fact],
+        metadatas=[{"date": str(datetime.date.today())}],
+        ids=[doc_id]
+    )
+    return f"Successfully embedded and remembered: {fact}"
 
 def fetch_memory(query: str = "") -> str:
-    """Fetches all saved memories with their index numbers. Use this to recall past information or before updating/deleting memories."""
-    if os.path.exists(MEMORY_FILE):
-        with open(MEMORY_FILE, 'r') as f:
-            memories = json.load(f)
-        if not memories:
-            return "Memory bank is empty."
-        lines = []
-        for i, m in enumerate(memories):
-            lines.append(f"[{i}] ({m['date']}) {m['fact']}")
-        return "All memories:\n" + "\n".join(lines)
-    return "Memory bank is empty."
+    """Searches long-term memory using vector similarity. Crucial for retrieving relevant past information."""
+    collection = get_chroma_collection()
+    if not query:
+        # If no query, return recent
+        results = collection.get(limit=10)
+        docs = results['documents']
+        ids = results['ids']
+        if not docs: return "Memory bank is empty."
+        return "\n".join([f"[{ids[i]}] {docs[i]}" for i in range(len(docs))])
+        
+    results = collection.query(
+        query_texts=[query],
+        n_results=3
+    )
+    docs = results['documents'][0]
+    ids = results['ids'][0]
+    if not docs:
+        return f"No memories found matching '{query}'."
+    return "Relevant memories found:\n" + "\n".join([f"[{ids[i]}] {docs[i]}" for i in range(len(docs))])
 
-def update_memory(index: int, new_fact: str) -> str:
-    """Updates an existing memory at the given index with a new fact. Use fetch_memory first to see the indices."""
-    if not os.path.exists(MEMORY_FILE):
-        return "Error: Memory bank is empty, nothing to update."
-    with open(MEMORY_FILE, 'r') as f:
-        memories = json.load(f)
-    if index < 0 or index >= len(memories):
-        return f"Error: Invalid index {index}. Valid range is 0 to {len(memories)-1}."
-    old_fact = memories[index]['fact']
-    memories[index]['fact'] = new_fact
-    memories[index]['date'] = str(datetime.date.today())
-    with open(MEMORY_FILE, 'w') as f:
-        json.dump(memories, f, indent=4)
-    return f"Updated memory [{index}]: '{old_fact}' → '{new_fact}'"
+def update_memory(memory_id: str, new_fact: str) -> str:
+    """Updates an existing memory with a new fact. Provide the string memory_id obtained from fetch_memory."""
+    collection = get_chroma_collection()
+    collection.update(
+        ids=[memory_id],
+        documents=[new_fact]
+    )
+    return f"Updated memory {memory_id} to '{new_fact}'"
 
-def delete_memory(index: int) -> str:
-    """Deletes a memory at the given index. Use fetch_memory first to see the indices."""
-    if not os.path.exists(MEMORY_FILE):
-        return "Error: Memory bank is empty, nothing to delete."
-    with open(MEMORY_FILE, 'r') as f:
-        memories = json.load(f)
-    if index < 0 or index >= len(memories):
-        return f"Error: Invalid index {index}. Valid range is 0 to {len(memories)-1}."
-    removed = memories.pop(index)
-    with open(MEMORY_FILE, 'w') as f:
-        json.dump(memories, f, indent=4)
-    return f"Deleted memory [{index}]: '{removed['fact']}'"
+def delete_memory(memory_id: str) -> str:
+    """Deletes a memory using its string memory_id."""
+    collection = get_chroma_collection()
+    collection.delete(ids=[memory_id])
+    return f"Deleted memory {memory_id}."
 
 def clear_all_memories() -> str:
-    """Clears ALL memories from the memory bank. Only use when the user explicitly asks to wipe or reset all memories."""
-    with open(MEMORY_FILE, 'w') as f:
-        json.dump([], f, indent=4)
-    return "All memories have been cleared."
+    """Clears ALL memories from the memory bank."""
+    import shutil
+    try:
+        shutil.rmtree("./chroma_memory")
+        return "All vector memories have been wiped."
+    except Exception as e:
+        return f"Error clearing memories: {e}"
+
+def start_project(project_name: str, path: str, description: str) -> str:
+    """Starts tracking a new project at a specific path. Use when the user starts a project."""
+    projects = {}
+    if os.path.exists(PROJECTS_FILE):
+        with open(PROJECTS_FILE, 'r') as f:
+            projects = json.load(f)
+    if project_name in projects and projects[project_name].get('status') == 'active':
+        return f"Project '{project_name}' is already active."
+    
+    projects[project_name] = {
+        "path": path,
+        "description": description,
+        "status": "active",
+        "started_at": str(datetime.datetime.now()),
+        "updates": []
+    }
+    with open(PROJECTS_FILE, 'w') as f:
+        json.dump(projects, f, indent=4)
+    return f"Started tracking project '{project_name}' at '{path}'."
+
+def update_project(project_name: str, progress_update: str) -> str:
+    """Adds a progress update or entry to an active project."""
+    if not os.path.exists(PROJECTS_FILE):
+        return "No projects are being tracked."
+    with open(PROJECTS_FILE, 'r') as f:
+        projects = json.load(f)
+    
+    if project_name not in projects:
+        return f"Error: Project '{project_name}' not found."
+    
+    projects[project_name]["updates"].append({
+        "timestamp": str(datetime.datetime.now()),
+        "update": progress_update
+    })
+    
+    with open(PROJECTS_FILE, 'w') as f:
+        json.dump(projects, f, indent=4)
+    return f"Successfully added update to project '{project_name}'."
+
+def get_projects() -> str:
+    """Retrieves all active projects, their paths, and their latest updates."""
+    if not os.path.exists(PROJECTS_FILE):
+        return "No projects are being tracked."
+    with open(PROJECTS_FILE, 'r') as f:
+        projects = json.load(f)
+        
+    active_projects = {k: v for k, v in projects.items() if v.get("status") == "active"}
+    if not active_projects:
+        return "There are no active projects."
+        
+    res = []
+    for name, data in active_projects.items():
+        latest = data["updates"][-1]["update"] if data["updates"] else "No updates yet."
+        res.append(f"Project: {name} | Path: {data.get('path', 'Unknown')} | Latest Update: {latest}")
+    return "Active Projects:\n" + "\n".join(res)
+
+def complete_project(project_name: str) -> str:
+    """Marks a project as completed so Jarvis stops tracking it actively."""
+    if not os.path.exists(PROJECTS_FILE):
+        return "No projects are being tracked."
+    with open(PROJECTS_FILE, 'r') as f:
+        projects = json.load(f)
+        
+    if project_name not in projects:
+        return f"Error: Project '{project_name}' not found."
+        
+    projects[project_name]["status"] = "completed"
+    projects[project_name]["completed_at"] = str(datetime.datetime.now())
+    with open(PROJECTS_FILE, 'w') as f:
+        json.dump(projects, f, indent=4)
+    return f"Project '{project_name}' has been marked as completed."
 
 def system_control(action: str) -> str:
     """Controls the computer system. Actions allowed: 'volume_up', 'volume_down', 'mute', 'lock', 'play', 'pause', 'next'."""
@@ -241,33 +327,45 @@ def take_screenshot() -> str:
         return f"Error taking screenshot: {e}"
 
 def analyze_screen(prompt: str = "Describe what you see on the screen in detail.") -> str:
-    """Takes a screenshot of the user's current screen and uses a Vision AI model to analyze it. Use this when the user asks you to 'read the screen', 'look at this', or 'what am I doing'."""
+    """Takes a screenshot of the user's current screen and uses a Vision AI model to analyze it."""
     import pyautogui
     import io
-    import ollama
+    import base64
+    from langchain_anthropic import ChatAnthropic
+    from langchain_core.messages import HumanMessage
     
     try:
         # Take screenshot
         screenshot = pyautogui.screenshot()
         img_byte_arr = io.BytesIO()
         screenshot.save(img_byte_arr, format='PNG')
-        img_bytes = img_byte_arr.getvalue()
+        encoded_string = base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
         
-        # Try to use llava for vision
-        try:
-            response = ollama.chat(
-                model='llava',
-                messages=[{
-                    'role': 'user',
-                    'content': prompt,
-                    'images': [img_bytes]
-                }]
-            )
-            return f"Screen Analysis: {response['message']['content']}"
-        except Exception as e:
-            if "not found" in str(e).lower() or "manifest" in str(e).lower():
-                return "Error: The 'llava' vision model is not installed. Please tell the user to open a terminal and run 'ollama pull llava' so you can gain the ability to see their screen."
-            return f"Vision Model Error: {e}"
+        anthropic_url = os.getenv("ANTHROPIC_BASE_URL", "http://localhost:20128/v1")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        anthropic_model = os.getenv("ANTHROPIC_MODEL", "kr/claude-sonnet-4.5")
+        headers = {"x-api-key": anthropic_key} if anthropic_key else {}
+        llm = ChatAnthropic(
+            model=anthropic_model,
+            anthropic_api_url=anthropic_url,
+            api_key=anthropic_key or "placeholder",
+            default_headers=headers
+        )
+        msg = HumanMessage(content=[
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_string}"}}
+        ])
+        response = llm.invoke([msg])
+        
+        # Extract plain text from response.content
+        if isinstance(response.content, list):
+            content_str = " ".join([b["text"] for b in response.content if "text" in b])
+        else:
+            content_str = str(response.content) if response.content else ""
+            
+        return f"Screen Analysis: {content_str}"
+    except Exception as e:
+        return f"Vision Model Error: {e}"
     except Exception as e:
         return f"Screenshot Error: {e}"
 
@@ -602,6 +700,10 @@ available_tools = {
     'update_memory': update_memory,
     'delete_memory': delete_memory,
     'clear_all_memories': clear_all_memories,
+    'start_project': start_project,
+    'update_project': update_project,
+    'get_projects': get_projects,
+    'complete_project': complete_project,
     'system_control': system_control,
     'web_search_and_summarize': web_search_and_summarize,
     'get_latest_news': get_latest_news,
@@ -631,6 +733,7 @@ ollama_tools = [
     get_time, search_wikipedia, open_application, open_website,
     open_file_or_folder, close_application, type_text, write_text_to_file, remember_information, 
     fetch_memory, update_memory, delete_memory, clear_all_memories,
+    start_project, update_project, get_projects, complete_project,
     system_control, web_search_and_summarize, get_latest_news, browse_website, 
     run_terminal_command, run_background_task, check_background_tasks,
     take_screenshot, analyze_screen, mouse_click, mouse_move, mouse_drag,
@@ -652,6 +755,43 @@ if os.path.exists("custom_tools.py"):
         print("Loaded custom tools successfully.")
     except Exception as e:
         print(f"Failed to load custom tools: {e}")
+
+# ═══════════════════════════════════════════════════════════
+# LANGGRAPH & GEMINI SETUP
+# ═══════════════════════════════════════════════════════════
+langchain_tools = [StructuredTool.from_function(func) for func in ollama_tools]
+
+class AgentState(TypedDict):
+    messages: Annotated[list, add_messages]
+
+gemini_llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=os.getenv("GEMINI_API_KEY"), temperature=0)
+llm_with_tools = gemini_llm.bind_tools(langchain_tools)
+
+def call_model(state: AgentState):
+    messages = state['messages']
+    if not messages or not isinstance(messages[0], SystemMessage):
+        messages = [SystemMessage(content=SYSTEM_PROMPT)] + messages
+    response = llm_with_tools.invoke(messages)
+    return {"messages": [response]}
+
+def should_continue(state: AgentState) -> Literal["tools", END]:
+    messages = state['messages']
+    last_message = messages[-1]
+    if getattr(last_message, 'tool_calls', None):
+        return "tools"
+    return END
+
+tool_node = ToolNode(langchain_tools)
+
+workflow = StateGraph(AgentState)
+workflow.add_node("agent", call_model)
+workflow.add_node("tools", tool_node)
+workflow.add_edge(START, "agent")
+workflow.add_conditional_edges("agent", should_continue)
+workflow.add_edge("tools", "agent")
+
+memory_saver = MemorySaver()
+jarvis_app = workflow.compile(checkpointer=memory_saver)
 
 # ═══════════════════════════════════════════════════════════
 # SPEECH ENGINE — edge-tts (Free, fast, interruptible)
@@ -744,7 +884,7 @@ def speak(text, interruptible=True):
             except PermissionError:
                 time.sleep(0.2)
     except Exception as e:
-        print(f"ElevenLabs TTS error: {e}")
+        print(f"Edge-TTS error: {e}")
     
     return was_interrupted
 
@@ -793,8 +933,20 @@ def wish_me():
     briefing = f"It's {day_name}, {date_str}."
     if weather:
         briefing += f" Weather outside is {weather}."
+        
+    # Check active projects
+    active_projects_msg = ""
+    if os.path.exists(PROJECTS_FILE):
+        try:
+            with open(PROJECTS_FILE, 'r') as f:
+                projects = json.load(f)
+            active_count = sum(1 for p in projects.values() if p.get("status") == "active")
+            if active_count > 0:
+                active_projects_msg = f" You currently have {active_count} active projects. Let me know if you have any progress to report."
+        except Exception:
+            pass
     
-    speak(f"{greeting} {briefing} All systems are online. How can I assist you today? Say 'Wake up Jarvis' when you're ready to begin.", interruptible=False)
+    speak(f"{greeting} {briefing}{active_projects_msg} All systems are online. How can I assist you today? Say 'Wake up Jarvis' when you're ready to begin.", interruptible=False)
 
     if startup_channel:
         startup_channel.fadeout(1500)
@@ -809,11 +961,12 @@ def take_command(r, source, whisper_model, timeout=8, phrase_limit=20):
         
     print("\nListening...")
     r.pause_threshold = 1.0  # Slightly faster response
-    r.energy_threshold = 250 # More sensitive for quiet rooms
-    r.dynamic_energy_threshold = True
+    r.dynamic_energy_threshold = True # Dynamically adapt to ambient noise
+    r.energy_threshold = 400 # Set a reasonable baseline
     try:
         audio = r.listen(source, timeout=timeout, phrase_time_limit=phrase_limit)
     except sr.WaitTimeoutError:
+        print("[Microphone timeout: No speech detected above threshold]")
         return "none"
 
     try:
@@ -824,14 +977,9 @@ def take_command(r, source, whisper_model, timeout=8, phrase_limit=20):
         segments, info = whisper_model.transcribe(
             "temp_audio.wav",
             beam_size=5,
-            vad_filter=True,
+            vad_filter=False,
             language="en",
-            condition_on_previous_text=False,
-            vad_parameters=dict(
-                min_silence_duration_ms=500,
-                speech_pad_ms=300,
-                threshold=0.4
-            )
+            condition_on_previous_text=False
         )
         query = " ".join([segment.text for segment in segments]).strip()
         
@@ -992,67 +1140,104 @@ def clean_response(text):
 
 def process_command(query, messages, r, source, whisper_model):
     """
-    Process a user command through the full agent loop:
-    1. Send to Ollama with tools
+    Process a user command through the full agent loop using Anthropic Claude via gateway:
+    1. Send to Claude with tools
     2. Execute any tool calls (in parallel if multiple)
     3. Multi-round: loop if LLM wants to call more tools
     4. Follow-up: if LLM asks a clarifying question, listen and recurse
     """
-    global jarvis_state, last_interaction_time
+    global jarvis_state, last_interaction_time, latest_executing_task
     
     jarvis_state = "thinking"
     print("Agent is thinking...")
     messages.append({'role': 'user', 'content': query})
     
     try:
-        # ── MULTI-ROUND AGENT LOOP (up to 5 rounds of tool calls) ──
+        from langchain_anthropic import ChatAnthropic
+        from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+        
+        # Initialize Anthropic Claude pointing to the custom gateway
+        anthropic_url = os.getenv("ANTHROPIC_BASE_URL", "http://localhost:20128/v1")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        anthropic_model = os.getenv("ANTHROPIC_MODEL", "kr/claude-sonnet-4.5")
+        headers = {"x-api-key": anthropic_key} if anthropic_key else {}
+        llm = ChatAnthropic(
+            model=anthropic_model,
+            anthropic_api_url=anthropic_url,
+            api_key=anthropic_key or "placeholder",
+            default_headers=headers,
+            max_tokens=1024,
+            temperature=0
+        )
+        llm_with_tools = llm.bind_tools(langchain_tools)
+        
+        # Convert dictionary history to LangChain messages
+        lc_messages = []
+        for m in messages:
+            if m['role'] == 'system':
+                lc_messages.append(SystemMessage(content=m['content']))
+            elif m['role'] == 'user':
+                lc_messages.append(HumanMessage(content=m['content']))
+            elif m['role'] == 'assistant':
+                # content might be list of dicts if Claude used tool calls in history
+                content_str = m.get('content')
+                if isinstance(content_str, list):
+                    content_str = "" # Simplified fallback for text extraction
+                lc_messages.append(AIMessage(content=content_str or ""))
+            elif m['role'] == 'tool':
+                lc_messages.append(ToolMessage(name=m.get('name', 'tool'), content=m['content'], tool_call_id=m.get('tool_call_id', 'dummy_id')))
+        
         MAX_TOOL_ROUNDS = 5
+        final_text = ""
+        
         for round_num in range(MAX_TOOL_ROUNDS):
-            response = ollama.chat(
-                model='llama3.2',
-                messages=messages,
-                tools=ollama_tools
-            )
-            response_message = response.get('message', {})
-            messages.append(response_message)
+            response = llm_with_tools.invoke(lc_messages)
+            lc_messages.append(response)
             
-            # If no tool calls, we have the final answer
-            if not response_message.get('tool_calls'):
+            # Extract plain text from response.content which might be a list or str
+            if isinstance(response.content, list):
+                content_str = " ".join([b["text"] for b in response.content if "text" in b])
+            else:
+                content_str = str(response.content) if response.content else ""
+                
+            messages.append({'role': 'assistant', 'content': content_str})
+            
+            if not response.tool_calls:
+                final_text = content_str
                 break
-            
-            # Execute tool calls (parallel if multiple)
+                
+            # Execute tool calls
             print(f"── Tool Round {round_num + 1} ──")
-            tool_results = execute_tools_parallel(response_message['tool_calls'])
-            messages.extend(tool_results)
+            # Convert to Ollama format for execute_tools_parallel compatibility
+            ollama_format_tool_calls = []
+            for tc in response.tool_calls:
+                ollama_format_tool_calls.append({
+                    'function': {
+                        'name': tc['name'],
+                        'arguments': tc['args']
+                    },
+                    'id': tc.get('id', 'dummy_id')
+                })
+                
+            tool_results = execute_tools_parallel(ollama_format_tool_calls)
             
-            # After executing tools, loop back to let LLM see results
-            # and potentially call more tools or give final answer
-        
-        # ── GET FINAL RESPONSE ──
-        # If the last message was a tool result, get the LLM's final spoken response
-        if messages[-1].get('role') == 'tool':
+            for tr, tc in zip(tool_results, response.tool_calls):
+                lc_messages.append(ToolMessage(name=tr['name'], content=tr['content'], tool_call_id=tc.get('id', 'dummy_id')))
+                tr['tool_call_id'] = tc.get('id', 'dummy_id')
+                messages.append(tr)
+                
             latest_executing_task = "[ GENERATING RESPONSE ]..."
-            final_response = ollama.chat(
-                model='llama3.2',
-                messages=messages
-            )
-            final_text = final_response['message']['content']
-            messages.append(final_response['message'])
-        else:
-            final_text = response_message.get('content', '')
-        
+
         if not final_text:
             return
-        
+            
         # ── FOLLOW-UP DETECTION ──
-        # If the LLM is asking a clarifying question, speak it and listen for the answer
         if '[FOLLOW_UP]' in final_text:
             clean_text = clean_response(final_text)
             if clean_text:
                 interrupted = speak(clean_text)
                 if interrupted:
-                    # User interrupted the question — listen for their new command
-                    return  # Caller will handle the interrupt
+                    return
                 jarvis_state = "listening"
                 print("Waiting for follow-up answer...")
                 follow_up = take_command(r, source, whisper_model, timeout=12, phrase_limit=25)
@@ -1060,15 +1245,14 @@ def process_command(query, messages, r, source, whisper_model):
                     last_interaction_time = time.time()
                     process_command(follow_up, messages, r, source, whisper_model)
             return
-        
+            
         # ── NORMAL RESPONSE ──
         clean_text = clean_response(final_text)
         if clean_text:
             speak(clean_text)
-            # If user interrupted, caller will handle it
             
     except Exception as e:
-        speak("I encountered an error connecting to the local Ollama server.", interruptible=False)
+        speak("I encountered an error connecting to the Claude gateway.", interruptible=False)
         print(f"Agent Error: {e}")
 
 
@@ -1105,7 +1289,8 @@ CORE RULES:
 13. FILE/FOLDER MANAGEMENT: To open a specific file or folder, ALWAYS use `open_file_or_folder`.
 14. COMPOUND MACROS: If asked a high-level task like "prepare for a meeting", you MUST break it down into multiple parallel tool calls (e.g., open Notepad, open Chrome to meet.google.com, close distractions). Do NOT just say you will do it—ACTUALLY execute the multiple tools.
 15. SELF-IMPROVEMENT: If you lack a tool to perform a task, you can write python code to create it using `create_new_tool`. Ensure you write a complete function with docstrings and type hints.
-16. You are the user's digital partner. Be proactive, observant, and technically superior.
+16. PROJECT TRACKING: If the user says "make an entry", "start this project", or wants to track progress on something, use `start_project` and `update_project`. If no path is provided when starting, ask the user for the local path. Use `get_projects` to review active projects and `complete_project` when they are done.
+17. You are the user's digital partner. Be proactive, observant, and technically superior.
 """
 
 
@@ -1134,7 +1319,7 @@ def jarvis_brain_thread():
         # Initializing Whisper strictly on CUDA
         print("Initializing Whisper on CUDA...")
         # Upgraded to large-v3 for maximum intelligence and accuracy
-        whisper_model = WhisperModel("large-v3", device="cuda", compute_type="float16")
+        whisper_model = WhisperModel("large-v3", device="cuda", device_index=0, compute_type="float16")
         print("Whisper model loaded successfully on NVIDIA GPU!")
     except Exception as e:
         print(f"STRICT GPU INITIALIZATION FAILED: {e}")
@@ -1378,7 +1563,7 @@ if __name__ == "__main__":
         screen.blit(status_text, text_rect)
         
         pygame.display.flip()
-        clock.tick(60) # Run UI at 60 FPS
+        clock.tick(30) # Run UI at 30 FPS to save CPU
         t += 1
         
     pygame.quit()

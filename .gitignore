@@ -1,0 +1,61 @@
+# ===================================================================
+# J.A.R.V.I.S. Git Ignore Rules
+# ===================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Environment and Secret Files
+.env
+.env*.local
+.env.production
+.env.development
+!.env.example
+
+# Logs and runtime dumps
+*.log
+crash.log
+output.log
+
+# Dynamic audio recordings and voice buffers
+temp_voice_*.mp3
+temp_interrupt.wav
+temp_*.wav
+temp_*.mp3
+*.mp3
+!startup.mp3
+
+# Vector Database and Chroma store
+chroma_memory/
+*.sqlite3
+
+# Temporary test files & generated screenshots
+screenshot_*.png
+*.png
+binary_search.py
+essay.txt
+word.txt
+get_folder_usage.*
+-p/
+MyNewFolder/
+"open source contributions"/
+
+# OS and Editor specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo

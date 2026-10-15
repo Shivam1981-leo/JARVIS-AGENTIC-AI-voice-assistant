@@ -1,16 +1,17 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=42&duration=3000&pause=1200&color=00C8FF&center=true&vCenter=true&width=700&lines=J.A.R.V.I.S.;Just+A+Rather+Very+Intelligent+System;Autonomous+AI+Desktop+Assistant" alt="JARVIS" />
+<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=42&duration=3000&pause=1200&color=00C8FF&center=true&vCenter=true&width=700&lines=J.A.R.V.I.S.;Just+A+Rather+Very+Intelligent+System;Agentic+AI+Voice+%26+Desktop+Assistant" alt="JARVIS" />
 
 <br/>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Ollama-llama3.2-0a0a0a?style=for-the-badge&logo=ollama&logoColor=white" />
-  <img src="https://img.shields.io/badge/Whisper-large--v3_GPU-FF6F00?style=for-the-badge&logo=nvidia&logoColor=white" />
+  <img src="https://img.shields.io/badge/LangGraph-Agentic_Loop-FF6F00?style=for-the-badge&logo=langchain&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google_Gemini-1.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Whisper-large--v3_CUDA-76B900?style=for-the-badge&logo=nvidia&logoColor=white" />
   <img src="https://img.shields.io/badge/Edge_TTS-en--GB--Ryan-5C6BC0?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Pygame-3D_Holographic_UI-00C853?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/CUDA-12.8+-76B900?style=for-the-badge&logo=nvidia&logoColor=white" />
+  <img src="https://img.shields.io/badge/ChromaDB-Vector_Memory-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Pygame-Holographic_HUD-00C853?style=for-the-badge" />
   <img src="https://img.shields.io/badge/License-MIT-FFD600?style=for-the-badge" />
 </p>
 
@@ -20,7 +21,7 @@
 
 <br/>
 
-A fully autonomous, voice-controlled AI desktop assistant built around a **local LLM agentic loop**, **GPU-accelerated Whisper transcription**, **real-time interruptible TTS**, **parallel tool execution**, and a **live 3D holographic Pygame UI** — engineered to feel like the JARVIS from Iron Man.
+A fully autonomous, voice-controlled Agentic AI desktop assistant built with **LangGraph StateGraph**, **Google Gemini & Anthropic Claude**, **GPU-accelerated Faster-Whisper transcription**, **ChromaDB vector memory**, **real-time interruptible Edge TTS**, **parallel tool dispatching**, and an **interactive 3D holographic Arc-Reactor HUD** — engineered from the ground up to bring the Marvel JARVIS experience to your Windows workstation.
 
 <br/>
 
@@ -28,327 +29,350 @@ A fully autonomous, voice-controlled AI desktop assistant built around a **local
 
 </div>
 
-## ✦ Visual States
+## 📑 Table of Contents
+
+- [✦ Visual States & Holographic HUD](#-visual-states--holographic-hud)
+- [⚡ Key Architecture & Highlights](#-key-architecture--highlights)
+- [🛠️ 40+ Autonomous Tool Arsenal](#️-40-autonomous-tool-arsenal)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🚀 Quickstart & Installation](#-quickstart--installation)
+- [🗣️ Wake Words & Voice Controls](#️-wake-words--voice-controls)
+- [📁 Project Layout](#-project-layout)
+- [🗺️ Future Roadmap](#️-future-roadmap)
+- [🤝 Contributing & License](#-contributing--license)
+
+---
+
+## ✦ Visual States & Holographic HUD
+
+J.A.R.V.I.S. features an authentic, dynamic **Arc Reactor HUD** rendered via Pygame. The core dynamically warps with sine-wave particle deformations synchronized with speech and system state:
 
 <div align="center">
 
-| State | Orb Color | Behavior | Description |
-|-------|-----------|----------|-------------|
-| 💤 **Asleep** | Dim Blue `#1E3C5A` | Slow pulse | Waiting for wake word |
-| 🎙️ **Listening** | Green `#00FF96` | Fast pulse + distortion | Capturing voice via Whisper |
-| 🧠 **Thinking** | Orange `#FF9600` | High-speed spin | LLM processing in Ollama |
-| 🔊 **Speaking** | Cyan `#00C8FF` | Sine-wave distortion | Edge-TTS playback, interruptible |
-| ✅ **Idle** | Blue `#0096FF` | Gentle float | Awaiting next command |
+| State | HUD Orb Color | Visual Behavior | Description |
+|:---:|:---:|:---|:---|
+| 💤 **Asleep** | Dim Blue `#1E3C5A` | Slow, gentle pulse | Low-power standby awaiting wake word |
+| 🎙️ **Listening** | Emerald Green `#00FF96` | Rapid distortion pulse | Faster-Whisper actively capturing voice input |
+| 🧠 **Thinking** | Amber Orange `#FF9600` | High-speed orbital spin | LangGraph & Gemini/Claude reasoning over tools |
+| 🔊 **Speaking** | Cyber Cyan `#00C8FF` | Sine-wave audio deformation | Edge-TTS streaming playback with live microphone listening |
+| ✅ **Idle** | Cerulean Blue `#0096FF` | Smooth harmonic float | System ready and awaiting next command |
 
 </div>
 
----
-
-## ⚡ Core Capabilities
-
-### 🤖 Multi-Round Agentic Loop
-- **5-round tool-chaining** — JARVIS calls tools, observes results, and decides the next action autonomously — up to 5 sequential rounds per command
-- **36 integrated tools** — web search, Wikipedia, terminal, mouse/keyboard control, screen vision, file I/O, memory, email, WhatsApp, and more
-- **Parallel tool execution** — compound commands dispatch multiple tools simultaneously via `ThreadPoolExecutor`, with per-tool result callbacks
-- **Follow-up detection** — ambiguous requests trigger a `[FOLLOW_UP]` clarifying question; JARVIS listens and recursively processes your answer
-- **Self-improvement** — JARVIS can write and load new Python tools at runtime via `create_new_tool`, permanently extending its own capabilities
-
-### 🎙️ Voice Engine
-- **Faster-Whisper `large-v3` on CUDA** — fully local, GPU-accelerated transcription with VAD filtering to suppress silence hallucinations
-- **Microsoft Edge TTS** (`en-GB-RyanNeural`) — free, high-quality British voice with zero API cost
-- **Mid-speech interruption** — while JARVIS is speaking, say `"stop"`, `"quiet"`, or `"cancel"` and playback halts instantly; JARVIS immediately begins listening for your next command
-- **Hallucination suppression** — short/common Whisper artifacts (`"you"`, `"okay"`, `"hmm"`) are filtered before reaching the LLM
-
-### ⚙️ Concurrency & Multitasking
-- **Background task engine** — long-running terminal commands (installs, downloads, batch jobs) run in a background `ThreadPoolExecutor`; results are announced via speech on completion
-- **Thread-safe state management** — all shared state guarded with `threading.Lock` and `queue.Queue`
-- **Proactive idle engagement** — after 5 minutes of silence JARVIS checks in with a randomized contextual message
-- **Real-time briefing on startup** — greets you with day, date, and live weather from `wttr.in` (no API key required)
-
-### 🌐 3D Holographic Pygame UI
-- **5-ring arc-reactor design** rendered in real-time at **60 FPS**
-- **Voice-reactive distortion** — the orb warps with a sine-wave deformation driven by current speech state
-- **Live HUD subtitles** — transcribed speech and JARVIS response scroll in real-time at the bottom of the screen
-- **Task execution overlay** — shows `[ SYSTEM EXECUTING ]: tool_name...` while tools are running
-- **Scanline overlay** — horizontal scanlines for a holographic CRT aesthetic
+- **Dynamic Subtitle Bar**: Displays real-time transcription of user speech and assistant responses.
+- **System Execution Overlay**: Emits live telemetry (`[ SYSTEM EXECUTING ]: tool_name...`) while parallel background or foreground routines execute.
 
 ---
 
-## 🛠️ Tool Arsenal
+## ⚡ Key Architecture & Highlights
 
-<details>
-<summary><b>▶ Click to expand — all 36 tools</b></summary>
+### 🤖 LangGraph Multi-Round Autonomous Loop
+- **Cyclic Agentic Decision Loop**: Powered by `langgraph.graph.StateGraph` with short-term checkpoints (`MemorySaver`).
+- **5-Round Deep Tool Chaining**: JARVIS iteratively selects tools, receives execution outputs, reasons over observations, and dispatches follow-ups autonomously.
+- **Parallel Dispatch Engine**: Dispatches compound actions (e.g., *"Open Chrome, launch VS Code, and search for the latest AI news"*) concurrently using `ThreadPoolExecutor`.
+- **Intelligent Clarification**: Recognizes ambiguities and asks interactive follow-up questions (`[FOLLOW_UP]`), seamlessly continuing the conversation upon listening to your response.
+
+### 🎙️ Local CUDA Voice Pipeline with Real-Time Interruption
+- **Faster-Whisper `large-v3` on NVIDIA CUDA**: Near-zero-latency local speech-to-text with Voice Activity Detection (VAD) and hallucination filters.
+- **British Vocal Persona**: Powered by Microsoft Edge TTS (`en-GB-RyanNeural`) for a polished, Iron Man-inspired British voice with zero cloud API costs.
+- **Mid-Speech Barge-In / Interruption**: Speak *"stop"*, *"quiet"*, *"shut up"*, or *"cancel"* while JARVIS is speaking to immediately cut off playback and pass control back to your voice.
+
+### 🧠 Semantic Vector Memory & Project Lifecycle
+- **ChromaDB Vector Store**: Automatically embeds facts, preferences, contacts, and personal information into a local vector database for fast semantic similarity search (`fetch_memory`, `remember_information`).
+- **Autonomous Project Tracker**: Create and track ongoing projects, paths, and status updates stored in structured JSON (`start_project`, `update_project`, `get_projects`, `complete_project`).
+
+### ⚙️ Self-Improving Tool Ecosystem
+- **Runtime Code Generation**: When faced with unfamiliar tasks, JARVIS can author new Python functions via `create_new_tool` and immediately hot-reload them from `custom_tools.py` without restarting the process.
+- **Sandboxed Code Execution**: Run on-the-fly Python scripts and calculations directly with `run_python_code`.
+- **Background Multitasking**: Long-running shell commands, builds, and package downloads run asynchronously; JARVIS audibly informs you the second they finish.
+
+---
+
+## 🛠️ 40+ Autonomous Tool Arsenal
+
+<details open>
+<summary><b>▶ Click to inspect all built-in capabilities</b></summary>
 
 <br/>
 
-### 🌐 Web & Information
+### 🌐 Web & Knowledge Retrieval
 | Tool | Description |
-|------|-------------|
-| `web_search_and_summarize` | Live DuckDuckGo search, top-5 results summarized |
-| `get_latest_news` | Fetches latest news on any topic via DuckDuckGo News |
-| `browse_website` | Fetches and reads full text content of any URL (2500 chars) |
-| `search_wikipedia` | Returns a 2-sentence Wikipedia summary |
+|:---|:---|
+| `web_search_and_summarize` | Live DuckDuckGo search with instant 5-source synthesis |
+| `get_latest_news` | Real-time news extraction filtered by category or topic |
+| `browse_website` | Full webpage scraper using BeautifulSoup (extracts 2,500 clean text chars) |
+| `search_wikipedia` | Direct encyclopedia query returning concise factual summaries |
 
-### 💻 System & Applications
+### 💻 System & Windows Desktop Control
 | Tool | Description |
-|------|-------------|
-| `open_application` | Launches a desktop app by name |
-| `close_application` | Closes a running desktop app |
-| `open_website` | Opens a URL in Google Chrome |
-| `open_file_or_folder` | Opens any file/folder in its default application |
-| `run_terminal_command` | Executes any Windows CMD command synchronously |
-| `run_background_task` | Runs a terminal command in background; announces on completion |
-| `check_background_tasks` | Reports status of all background tasks |
-| `system_control` | Volume, mute, lock, play/pause, next track |
-| `get_system_stats` | Returns CPU %, RAM %, and battery status |
-| `get_time` | Returns current local time |
+|:---|:---|
+| `open_application` | Launches Windows desktop software (VS Code, Chrome, Terminal, etc.) via `AppOpener` |
+| `close_application` | Gracefully closes running desktop applications by title |
+| `open_website` | Directly opens URLs in Google Chrome |
+| `open_file_or_folder` | Opens files/folders with associated native OS handlers (`os.startfile`) |
+| `run_terminal_command` | Executes Windows CMD commands synchronously and captures stdout/stderr |
+| `run_background_task` | Launches background shell jobs in a separate worker thread pool |
+| `check_background_tasks` | Telemetry on active and queued background jobs |
+| `system_control` | Hardware control: Volume Up/Down, Mute, Lock Workstation, Play/Pause, Next Track |
+| `get_system_stats` | Real-time hardware telemetry: CPU load %, RAM utilization %, and Battery status |
+| `get_time` | Fetches local workstation timestamp |
 
-### 🖱️ Mouse & Keyboard Control
+### 🖱️ Mouse, Keyboard & Automation
 | Tool | Description |
-|------|-------------|
-| `mouse_click` | Click, double-click, right-click at screen coordinates |
-| `mouse_move` | Moves cursor to `(x, y)` with smooth animation |
-| `mouse_drag` | Clicks and drags to target coordinates |
-| `mouse_scroll` | Scrolls up (positive) or down (negative) |
-| `press_key` | Presses any key or hotkey (`ctrl+c`, `alt+tab`, `win`) |
-| `type_text` | Types text into the active window character-by-character |
-| `get_clipboard` | Reads current clipboard contents |
+|:---|:---|
+| `mouse_click` | Left-click, double-click, or right-click at explicit `(x, y)` coordinates |
+| `mouse_move` | Smooth, interpolated cursor navigation to screen targets |
+| `mouse_drag` | Click-and-drag interactions for windows, sliders, and canvas elements |
+| `mouse_scroll` | Vertical scrolling (positive for up, negative for down) |
+| `type_text` | Types text strings into the currently focused window character-by-character |
+| `press_key` | Dispatches single keys and hotkey combinations (`ctrl+c`, `alt+tab`, `win`) |
+| `get_clipboard` | Inspects current system clipboard contents |
 
 ### 👁️ Screen Vision & OCR
 | Tool | Description |
-|------|-------------|
-| `take_screenshot` | Saves a timestamped PNG screenshot |
-| `analyze_screen` | Uses **LLaVA** vision model to describe what's on screen |
-| `find_text_on_screen` | Uses **Tesseract OCR** to locate text and return its coordinates |
-| `list_windows` | Returns all open window titles, positions, and sizes |
-| `get_active_window` | Returns the title of the currently focused window |
+|:---|:---|
+| `take_screenshot` | Captures high-resolution timestamped PNG screenshots |
+| `analyze_screen` | Multimodal Vision model evaluates active screen content and UI layouts |
+| `find_text_on_screen` | Tesseract OCR scans the monitor to return coordinate bounding boxes for text |
+| `list_windows` | Enumerates all visible desktop windows, positions, and dimensions |
+| `get_active_window` | Identifies the currently focused window title |
 
-### 📁 File & Text
+### 🧠 Vector Memory & Project Management
 | Tool | Description |
-|------|-------------|
-| `write_text_to_file` | Creates or overwrites any file with given content |
+|:---|:---|
+| `remember_information` | Embeds personal facts into local ChromaDB vector storage |
+| `fetch_memory` | Semantic similarity query to retrieve relevant stored knowledge |
+| `update_memory` | Updates an existing vector memory entry by UUID |
+| `delete_memory` | Deletes a specific memory record from ChromaDB |
+| `clear_all_memories` | Wipes the persistent vector collection |
+| `search_contact` | Fast lookup for remembered telephone numbers, emails, and names |
+| `start_project` | Initiates tracking for a development project with a directory path |
+| `update_project` | Logs progress updates and notes against an active project |
+| `get_projects` | Lists all active projects and latest milestone updates |
+| `complete_project` | Archives a completed project |
 
-### 🧠 Memory
+### 📬 Messaging & Communication
 | Tool | Description |
-|------|-------------|
-| `remember_information` | Saves a fact to persistent `memory.json` |
-| `fetch_memory` | Retrieves all saved memories with index numbers |
-| `update_memory` | Updates a memory entry by index |
-| `delete_memory` | Removes a memory entry by index |
-| `clear_all_memories` | Wipes the entire memory bank |
-| `search_contact` | Searches memory for a contact's details |
+|:---|:---|
+| `send_whatsapp_message` | Automated message dispatching via `pywhatkit` Web automation |
+| `send_email` | Transmits emails via Gmail SMTP using secure App Passwords |
 
-### 📬 Communication
+### 🔧 Self-Improvement & Custom Tools
 | Tool | Description |
-|------|-------------|
-| `send_whatsapp_message` | Sends a WhatsApp message via `pywhatkit` (requires web login) |
-| `send_email` | Sends an email via Gmail SMTP using `.env` credentials |
-
-### 🔧 Self-Improvement
-| Tool | Description |
-|------|-------------|
-| `create_new_tool` | Writes and hot-loads a new Python tool into JARVIS at runtime |
+|:---|:---|
+| `create_new_tool` | Autonomously codes new Python tools into `custom_tools.py` and hot-loads them |
+| `run_python_code` | Sandboxed Python code execution for instant mathematical and logical computing |
+| `play_spotify_music` | Searches and triggers song playback in Spotify Web |
 
 </details>
 
 ---
 
-## 🚀 Getting Started
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph UI ["Pygame 3D Holographic HUD (60/30 FPS)"]
+        Orb["Arc Reactor Orb & Rings"]
+        Subtitles["Live Subtitles & System Telemetry"]
+    end
+
+    subgraph AudioEngine ["Voice Processing Pipeline"]
+        Mic["Microphone Input"] --> VAD["Silero VAD / Energy Calibration"]
+        VAD --> Whisper["Faster-Whisper (large-v3 on CUDA)"]
+        TTS["Edge-TTS (en-GB-RyanNeural)"] --> Speaker["Interruptible Audio Playback"]
+    end
+
+    subgraph Brain ["LangGraph Autonomous Core"]
+        State["StateGraph AgentState"]
+        LLM["Google Gemini 1.5 Flash / Claude 3.5"]
+        Checkpointer["MemorySaver (Short-Term Memory)"]
+        State <--> LLM
+        State <--> Checkpointer
+    end
+
+    subgraph MemoryLayer ["Knowledge & Storage"]
+        Chroma["ChromaDB (Vector Memory)"]
+        Projects["projects.json (Project Lifecycle)"]
+    end
+
+    subgraph Execution ["Tools & Multitasking"]
+        Tools["40+ System / Automation Tools"]
+        CustomTools["custom_tools.py (Hot-Loaded Dynamic Tools)"]
+        BGPool["ThreadPoolExecutor (Background Tasks)"]
+    end
+
+    Whisper -->|Transcribed Text| State
+    State -->|Function Calls| Tools
+    State -->|Hot-Reload Tools| CustomTools
+    State -->|Async Jobs| BGPool
+    State <--> Chroma
+    State <--> Projects
+    State -->|Response Tokens| TTS
+    State -.->|State Broadcast| Orb
+    Tools -.->|Telemetry| Subtitles
+```
+
+---
+
+## 🚀 Quickstart & Installation
 
 ### Prerequisites
 
-- Python **3.10+**
-- [Ollama](https://ollama.com) installed and running locally
-- **NVIDIA GPU** with CUDA 12.8+ (required — JARVIS runs Whisper in strict GPU mode)
-- Windows OS (system tools use Windows-specific commands)
+- **Operating System**: Windows 10 / 11 (64-bit)
+- **Python**: 3.10 or higher
+- **GPU**: NVIDIA GPU with CUDA 12.0+ (CUDA Toolkit & cuDNN installed)
+- **Google Gemini API Key**: Free tier from [Google AI Studio](https://aistudio.google.com/)
 
-### 1 · Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Shivam1981-leo/JARVIS-AGENTIC-AI-voice-assistant.git
 cd JARVIS-AGENTIC-AI-voice-assistant
 ```
 
-### 2 · Install dependencies
+### 2. Set Up a Virtual Environment
+
+```bash
+python -m venv .venv
+.\.venv\Scripts\activate
+```
+
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Note:** `pyaudio` often needs a pre-built wheel on Windows:
+> **PyAudio on Windows**: If `pyaudio` installation encounters compilation errors, install via prebuilt wheel:
 > ```bash
-> pip install pipwin && pipwin install pyaudio
+> pip install pipwin
+> pipwin install pyaudio
 > ```
 
-> **Note:** `faster-whisper` requires CUDA 12.8+ and cuDNN. Install via:
-> ```bash
-> pip install faster-whisper
-> ```
-> Ensure your NVIDIA drivers are **572.60+** and CUDA toolkit is on your PATH.
+> **CUDA Accelerated Faster-Whisper**: Verify your CUDA environment and drivers (`nvidia-smi`). Ensure PyTorch and cuDNN can access GPU acceleration.
 
-### 3 · Pull Ollama models
+### 4. Configure Environment Variables
+
+Copy the `.env.example` template to `.env`:
 
 ```bash
-ollama pull llama3.2    # Core reasoning + tool-calling model
-ollama pull llava       # Vision model for screen analysis
+copy .env.example .env
 ```
 
-### 4 · Configure environment
-
-Create a `.env` file in the project root:
+Open `.env` and fill in your keys:
 
 ```env
-# Required for email tool
-GMAIL_USER=your_gmail@gmail.com
-GMAIL_PASSWORD=your_app_password_here
+# Google Gemini (Primary Agent Model)
+GEMINI_API_KEY=AIzaSy...
+
+# Anthropic Claude (Optional / Screen Vision Fallback)
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_BASE_URL=http://localhost:20128/v1
+ANTHROPIC_MODEL=kr/claude-sonnet-4.5
+
+# Gmail SMTP Configuration (Required only for send_email tool)
+GMAIL_USER=your_email@gmail.com
+GMAIL_PASSWORD=your_gmail_app_password
 ```
 
-> Edge TTS requires **no API key** — it runs entirely free via Microsoft's online service.
+### 5. (Optional) Install Tesseract OCR
 
-### 5 · (Optional) Install Tesseract OCR
+To enable screen coordinate text detection via `find_text_on_screen`:
+1. Download installer from [UB-Mannheim Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki).
+2. Install to `C:\Program Files\Tesseract-OCR`.
+3. Add `C:\Program Files\Tesseract-OCR` to your Windows System `PATH`.
 
-For the `find_text_on_screen` tool to work:
-
-- Download from [UB Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
-- Add `C:\Program Files\Tesseract-OCR` to your system PATH
-
-### 6 · Run JARVIS
+### 6. Launch J.A.R.V.I.S.
 
 ```bash
-python jarvis.py
+python main.py
 ```
 
-JARVIS will verify your GPU, calibrate ambient noise, deliver a live weather briefing, and enter standby mode.
+Upon launch, JARVIS will:
+1. Verify NVIDIA GPU & initialize `large-v3` Whisper in float16.
+2. Initialize LangGraph tools and load dynamic scripts from `custom_tools.py`.
+3. Play the startup chime (`startup.mp3`) and render the holographic Pygame HUD.
+4. Deliver a live weather and date briefing from `wttr.in`.
+5. Enter standby mode awaiting your wake word!
 
 ---
 
-## 🗣️ Wake Words & Commands
+## 🗣️ Wake Words & Voice Controls
 
-| Phrase | Action |
-|--------|--------|
-| `"Wake up Jarvis"` | Activates JARVIS from sleep |
-| `"Jarvis, [command]"` | Issue any voice command |
-| `"Sleep"` / `"Go to sleep"` | Returns to standby |
-| `"Stop"` / `"Shut up"` / `"Quiet"` | Interrupts mid-speech instantly |
-| `"Exit"` / `"Shut down"` / `"Bye"` | Closes the application |
+| Command Phrase | Triggered Behavior |
+|:---|:---|
+| `"Wake up Jarvis"` | Wakes JARVIS from low-power sleep mode into active listening |
+| `"Jarvis, [your command]"` | Directly execute any command from standby |
+| `"Sleep"` / `"Go to sleep"` | Returns JARVIS to sleep mode |
+| `"Stop"` / `"Quiet"` / `"Shut up"` / `"Cancel"` | **Instant mid-speech barge-in** — halts speech playback immediately and starts listening |
+| `"Exit"` / `"Shut down"` / `"Goodbye"` | Shuts down background workers and exits the application |
 
-### Example Commands
+### Example Voice Interactions
 
-```
-"Open VS Code and Chrome at the same time"
-"Search for the latest news on AI"
-"Write a Python script for bubble sort and save it"
-"Remember that my standup is at 10 AM every day"
-"What's on my screen right now?"
-"Run git pull in the background and tell me when it's done"
-"Volume up and play the next track"
-"Find the Submit button on screen and click it"
-"Send a WhatsApp message to mom saying I'll be home late"
-"What's my CPU usage right now?"
-```
+- *"Jarvis, open VS Code and Chrome side by side."*
+- *"Search for recent breakthroughs in quantum computing and summarize them."*
+- *"Remember that my primary database port is 5432."*
+- *"What did I tell you about my database port?"*
+- *"Take a screenshot, analyze my screen, and tell me what error is shown."*
+- *"Start a new project called Jarvis Mobile located at D:\Projects\Mobile."*
+- *"Run pip install pytest in the background and let me know when it's done."*
+- *"Turn the volume down and play the next track."*
+- *"Write a Python script for Dijkstra's algorithm and save it as dijkstra.py."*
+- *"Send an email to team@company.com with the subject 'Daily Standup'."*
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Layout
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                      J.A.R.V.I.S System                      │
-│                                                              │
-│  ┌─────────────┐    ┌────────────────────┐  ┌────────────┐  │
-│  │  Pygame UI  │    │   Brain Thread     │  │ BG Executor│  │
-│  │  3D Orb     │◄───│   (Main Loop)      │─►│ ThreadPool │  │
-│  │  60 FPS HUD │    │                    │  │ (4 workers)│  │
-│  └─────────────┘    └────────┬───────────┘  └────────────┘  │
-│                              │                               │
-│                   ┌──────────▼──────────┐                    │
-│                   │  Faster-Whisper     │                    │
-│                   │  large-v3 on CUDA   │                    │
-│                   │  VAD + Hallucination│                    │
-│                   │  Suppression        │                    │
-│                   └──────────┬──────────┘                    │
-│                              │                               │
-│                   ┌──────────▼──────────┐                    │
-│                   │  Ollama llama3.2    │                    │
-│                   │  Agentic Loop ×5   │                    │
-│                   │  36 Tools          │                    │
-│                   │  Parallel Dispatch │                    │
-│                   └──────────┬──────────┘                    │
-│                              │                               │
-│                   ┌──────────▼──────────┐                    │
-│                   │  Edge TTS           │                    │
-│                   │  en-GB-RyanNeural   │                    │
-│                   │  Interruptible      │                    │
-│                   │  Playback           │                    │
-│                   └─────────────────────┘                    │
-└──────────────────────────────────────────────────────────────┘
+JARVIS-AGENTIC-AI-voice-assistant/
+│
+├── main.py              # Main application entry point: LangGraph agent, HUD, Voice pipeline
+├── custom_tools.py      # Runtime self-extensible tools (hot-reloaded dynamically)
+├── requirements.txt     # Complete Python package dependency manifest
+├── .env.example         # Environment template with documented keys
+├── .gitignore           # Git ignore rules for logs, virtual environments, audio artifacts
+├── startup.mp3          # Startup sound effect played on initialization
+├── memory.json          # Legacy memory store backup
+├── projects.json        # Structured project tracking repository
+└── README.md            # Comprehensive project documentation
 ```
 
 ---
 
-## 📦 Key Dependencies
+## 🗺️ Future Roadmap
 
-```
-faster-whisper       # GPU-accelerated local STT (Whisper large-v3)
-edge-tts             # Free Microsoft TTS (no API key)
-ollama               # Local LLM inference (llama3.2 + llava)
-pygame               # 3D holographic UI
-SpeechRecognition    # Microphone capture
-pyautogui            # Mouse and keyboard automation
-pygetwindow          # Window title and position tracking
-pytesseract          # OCR for find_text_on_screen
-duckduckgo-search    # Privacy-respecting web search
-AppOpener            # Cross-app launcher
-pywhatkit            # WhatsApp automation
-psutil               # CPU, RAM, battery stats
-requests             # Web browsing and wttr.in weather
-beautifulsoup4       # HTML text extraction
-python-dotenv        # .env credential management
-```
+- [x] Multi-round LangGraph cyclic agent reasoning with tool checkpointing
+- [x] Faster-Whisper `large-v3` running strictly on NVIDIA CUDA
+- [x] ChromaDB semantic vector memory bank
+- [x] Real-time mid-speech microphone barge-in interruption
+- [x] Self-improving runtime tool generation (`custom_tools.py`)
+- [ ] Local streaming audio transcription (real-time word-by-word STT display)
+- [ ] Multi-screen HUD support for multi-monitor desktop setups
+- [ ] Native Spotify Web API OAuth2 integration
+- [ ] Mobile companion interface via local WebSocket bridge
 
 ---
 
-## 🗺️ Roadmap
+## 🤝 Contributing & License
 
-- [ ] GPU-accelerated Whisper inference with streaming (real-time partial transcription)
-- [ ] LLaVA vision integration for real-time screen understanding during commands
-- [ ] Custom wake word model (replace keyword matching with a trained detector)
-- [ ] Multi-monitor support for the 3D holographic UI
-- [ ] Spotify & media control via official API
-- [ ] Gmail / Google Calendar integration
-- [ ] Mobile companion app for remote voice commands
-- [ ] Plugin marketplace for community-built tools
+Contributions, issues, and feature suggestions are welcome!
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome. Please open an issue first to discuss what you'd like to change.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+1. Fork the Project (`https://github.com/Shivam1981-leo/JARVIS-AGENTIC-AI-voice-assistant`)
+2. Create your Feature Branch (`git checkout -b feature/NewFeature`)
+3. Commit your Changes (`git commit -m 'Add NewFeature'`)
+4. Push to the Branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
 
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for details.
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
 <div align="center">
 
-**Built with ❤️ by [Shivam Shirsat](https://github.com/Shivam1981-leo)**
+**Crafted with precision by [Shivam Shirsat](https://github.com/Shivam1981-leo)**
 
-<br/>
-
-*"I am Iron Man."*
-
-<br/>
-
-⭐ **Star this repo if JARVIS impressed you.**
+⭐ **Star this repository if JARVIS inspired your AI projects!**
 
 </div>
